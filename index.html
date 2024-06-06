@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase_version9_RealtimeDB(G'sACADEMY初学者用サンプル)</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <h1>あひるチャット</h1>
+    <!-- コンテンツ表示画面 -->
+    <div>
+        <!-- 各場所にidを設定しましょう -->
+        <div>
+            <input type="text" id="uname" placeholder="名前を入力してください">
+        </div>
+        <div>
+            <textarea id="text" placeholder="文章を入力してください"></textarea>
+        </div>
+        <button id="send">送信</button>
+        <!-- style.cssに "overflow: auto;"を書いてみましょう！※最後に -->
+        <div id="output"></div>
+    </div>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.1.0/firebase-app.js";
+        import { getDatabase, ref, push, set, onChildAdded, remove, onChildRemoved }
+            from "https://www.gstatic.com/firebasejs/9.1.0/firebase-database.js";
+        // Your web app's Firebase configuration
+        //  → WebアプリのFirebase設定
+
+
+        // これ以下７行を書き換える
+        // 以下６行の ” この内側 ” は、キー（鍵）なので、消してブランクにした後にGitHubにアップする
+        const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+
+
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app); //RealtimeDBに接続
+        const dbRef = ref(db, "chat"); //RealtimeDB内の"chat"を使う
+
+        //データ登録(Click)
+        $("#send").on('click', function(){  //お客様が何やったかを監視するのが 'on'
+            const uname = $('#uname').val();
+            const text = $('#text').val();
+
+        // 表示の確認をしてみましょう
+            console.log(uname,'名前')
+            console.log(text,'テキスト')
+        
+        // 送信のデータの塊を作ります
+        const msg = {
+            uname: $('#uname').val(),
+            text: $('#text').val(),
+        }
+
+        // 送信処理を書きます
+        // firebaseにpush=送る準備する  dbRefは皆さんの秘密の鍵情報
+        const newPostRef = push(dbRef)
+        set(newPostRef, msg)
+
+        // 送信した後に入力欄を空にする
+        $('#uname').val("");
+        $('#text').val("");
+
+    })
+
+
+        //データ登録(Enter)
+
+        //最初にデータ取得＆onChildAddedでリアルタイムにデータを取得
+        onChildAdded(dbRef, function(data){  //onChildAdded()はFirebaseのおまじない
+            const msg = data.val();
+            console.log(msg, 'データの中身')
+            const key = data.key;
+            console.log(key, '鍵の名前')
+
+            // htmlとして埋め込みたいので ` を使う
+            let html = `
+                <div class="msg">
+                    <p>${msg.uname}</p>
+                    <p>${msg.text}</p>
+                </div>    
+            `
+            $("#output").append(html); //outputの最後に追加
+        })
+    
+    </script>
+</body>
+
+</html>
